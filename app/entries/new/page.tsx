@@ -12,6 +12,7 @@ export default function NewEntryPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checked, setChecked] = useState(false);
+  const [submitAsDraft, setSubmitAsDraft] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,7 +54,7 @@ export default function NewEntryPage() {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   credentials: "include",
-                  body: JSON.stringify({ title, content }),
+                  body: JSON.stringify({ title, content, isDraft: submitAsDraft }),
                 });
 
                 let data: any = null;
@@ -71,7 +72,7 @@ export default function NewEntryPage() {
                   );
                   return;
                 }
-                router.push(`/entries/${data.id}`);
+                router.push(submitAsDraft ? "/drafts" : `/entries/${data.id}`);
                 router.refresh();
               } finally {
                 setLoading(false);
@@ -110,8 +111,21 @@ export default function NewEntryPage() {
               required
             />
             <div className="toolbar">
-              <button className="btn" type="submit" disabled={loading}>
-                {loading ? "发布中…" : "发布"}
+              <button
+                className="btn"
+                type="submit"
+                disabled={loading}
+                onClick={() => setSubmitAsDraft(false)}
+              >
+                {loading && !submitAsDraft ? "发布中…" : "发布"}
+              </button>
+              <button
+                className="btn btn-secondary"
+                type="submit"
+                disabled={loading}
+                onClick={() => setSubmitAsDraft(true)}
+              >
+                {loading && submitAsDraft ? "保存中…" : "保存草稿"}
               </button>
               <Link
                 href="/"

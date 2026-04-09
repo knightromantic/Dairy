@@ -45,6 +45,7 @@ export function Header() {
           {me ? (
             <>
               <span className="nav-email">{me.email}</span>
+              <Link href="/drafts">草稿</Link>
               <Link href="/entries/new">写日记</Link>
               <button type="button" className="link-btn" onClick={() => void logout()}>
                 退出

@@ -10,6 +10,7 @@ type EntryJson = {
   id: string;
   title: string;
   content: string;
+  isDraft?: boolean;
   createdAt: string;
   author: Author;
 };
@@ -29,6 +30,7 @@ export function EntryDetail({ entryId }: { entryId: string }) {
   const [me, setMe] = useState<{ userId: string } | null | undefined>(
     undefined
   );
+  const [deleting, setDeleting] = useState(false);
 
   const refreshAll = useCallback(async () => {
     const [er, cr, mr] = await Promise.all([
@@ -91,7 +93,38 @@ export function EntryDetail({ entryId }: { entryId: string }) {
       <h1 className="entry-title">{entry.title}</h1>
       <div className="entry-meta">
         {entry.author.display} · {new Date(entry.createdAt).toLocaleString("zh-CN")}
+        {entry.isDraft ? " · 草稿" : null}
       </div>
+
+      {me && me.userId === entry.author.id ? (
+        <div className="toolbar" style={{ marginTop: 0, marginBottom: "1.5rem" }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={deleting}
+            onClick={async () => {
+              const ok = window.confirm("确认删除这篇日记？删除后不可恢复。");
+              if (!ok) return;
+              setDeleting(true);
+              try {
+                const r = await fetch(`/api/entries/${entryId}`, {
+                  method: "DELETE",
+                  credentials: "include",
+                });
+                if (!r.ok) {
+                  setLoadError(`删除失败（HTTP ${r.status}）`);
+                  return;
+                }
+                window.location.href = "/";
+              } finally {
+                setDeleting(false);
+              }
+            }}
+          >
+            {deleting ? "删除中…" : "删除文章"}
+          </button>
+        </div>
+      ) : null}
 
       {paragraphs.map((text, index) => (
         <section key={index} className="paragraph-block">

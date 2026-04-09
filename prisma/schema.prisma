@@ -14,9 +14,6 @@ model User {
   id           String   @id @default(cuid())
   email        String   @unique
   passwordHash String
-  emailVerified Boolean @default(false)
-  verifyToken   String?
-  verifyTokenExpires DateTime?
 
   entries  Entry[]
   comments Comment[]
@@ -27,6 +24,7 @@ model Entry {
   id        String   @id @default(cuid())
   title     String
   content   String
+  isDraft   Boolean  @default(false)
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments  Comment[]

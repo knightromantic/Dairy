@@ -32,13 +32,6 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!user.emailVerified) {
-    return NextResponse.json(
-      { error: "请先完成邮箱验证后再登录" },
-      { status: 403 }
-    );
-  }
-
   const session = await getSession();
   session.user = { userId: user.id, email: user.email };
   await session.save();

@@ -5,6 +5,7 @@ import { getSession } from "@/lib/get-session";
 
 export async function GET() {
   const entries = await prisma.entry.findMany({
+    where: { isDraft: false },
     orderBy: { createdAt: "desc" },
     take: 50,
     include: {
@@ -37,6 +38,7 @@ function maskEmail(email: string): string {
 const createSchema = z.object({
   title: z.string().min(1, "请填写标题").max(200),
   content: z.string().min(1, "请填写正文").max(50_000),
+  isDraft: z.boolean().optional(),
 });
 
 export async function POST(req: Request) {
@@ -64,6 +66,7 @@ export async function POST(req: Request) {
     data: {
       title: parsed.data.title.trim(),
       content: parsed.data.content.trim(),
+      isDraft: parsed.data.isDraft ?? false,
       authorId: session.user.userId,
     },
   });
