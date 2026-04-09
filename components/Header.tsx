@@ -6,12 +6,21 @@ import { useCallback, useEffect, useState } from "react";
 type Me = { userId: string; email: string } | null;
 
 export function Header() {
-  const [me, setMe] = useState<Me | undefined>(undefined);
+  // 未拉取会话前视为未登录，避免生产环境 /api/auth/me 失败时导航整块为空
+  const [me, setMe] = useState<Me>(null);
 
   const refresh = useCallback(async () => {
-    const r = await fetch("/api/auth/me", { credentials: "include" });
-    const data = await r.json();
-    setMe(data.user ?? null);
+    try {
+      const r = await fetch("/api/auth/me", { credentials: "include" });
+      if (!r.ok) {
+        setMe(null);
+        return;
+      }
+      const data = (await r.json()) as { user: Me };
+      setMe(data.user ?? null);
+    } catch {
+      setMe(null);
+    }
   }, []);
 
   useEffect(() => {
@@ -31,7 +40,7 @@ export function Header() {
           日记站
         </Link>
         <nav className="nav">
-          {me === undefined ? null : me ? (
+          {me ? (
             <>
               <span className="nav-email">{me.email}</span>
               <Link href="/entries/new">写日记</Link>

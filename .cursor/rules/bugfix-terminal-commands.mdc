@@ -1,0 +1,10 @@
+---
+description: 修 bug 时在回复里附带需要执行的终端命令
+alwaysApply: true
+---
+
+# 修 Bug 时的回复格式
+
+- 每当修复 `diary-web` 中的 bug 或做出需要用户同步到 Git / 部署的改动时，在说明文字**末尾**用一个小节 **「终端指令」**（或 **「本 Fix 相关命令」`）列出**可直接复制执行的命令。
+- 默认包含：在 `E:\FirstDemo\diary-web`（或当前仓库根）下的 `git status` / `git add` / `git commit` / `git push`（若适用）；若涉及数据库迁移或本地验证，附上 `npx prisma migrate deploy`、`npm run dev`、`npm run build` 等。
+- 若无需跑命令（例如纯云端配置说明），写明 **「无需本地终端命令」**。
