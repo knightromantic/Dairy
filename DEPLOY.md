@@ -23,11 +23,13 @@
 
 1. 打开 [https://console.neon.tech](https://console.neon.tech) 并登录。
 2. 创建 **Project**，区域选离用户较近的区域即可。
-3. 在 Dashboard 里找到 **Connection string**（或 “Connect”），复制 **带密码** 的 URI。  
-   - 格式类似：`postgresql://用户名:密码@ep-xxxx.region.aws.neon.tech/neondb?sslmode=require`  
-   - **务必保留** `?sslmode=require`（或 Neon 提供的完整参数），否则在 Vercel 上可能连不上。
-4. 把这一整串保存好，下一步填到 Vercel 环境变量 **`DATABASE_URL`** 里。  
-   - Neon 的库是空库即可，**表结构由首次部署时的 Prisma 迁移自动创建**，无需在控制台手动建表。
+3. 在 Dashboard 打开 **Connect**（连接）。Neon 会提供多种连接串，本项目需要 **两条**：
+   - **Pooled**（或标注为适合 Serverless 的）：主机名里通常有 **`-pooler`**，用作 **`DATABASE_URL`**。  
+   - **Direct**（直连、非 pooler）：主机名 **没有** `-pooler`，用作 **`DIRECT_URL`**。  
+   Prisma 会在 **`prisma migrate deploy`**（含 Vercel 构建）时使用 **`DIRECT_URL`**；若只配 pooler，容易出现 **`P1001: Can't reach database server`**。
+4. 两条 URI 都须 **带密码**，并保留 Neon 给出的查询参数（常见含 **`sslmode=require`**）。密码里若有 `@`、`#` 等特殊字符，需在 URI 里做 **URL 编码**。
+5. 将 **`DATABASE_URL`**、**`DIRECT_URL`** 填到 Vercel 环境变量（见第五节）。  
+   - Neon 的库是空库即可，**表结构由首次部署时的迁移自动创建**。
 
 ---
 
@@ -73,7 +75,8 @@ git push -u origin main
 
 | 变量名 | 作用 | 示例或说明 |
 |--------|------|------------|
-| `DATABASE_URL` | Prisma 连接数据库 | Neon 复制的完整 URI |
+| `DATABASE_URL` | 应用运行时连库（Neon **Pooled**） | 主机名含 `-pooler` 的那条 |
+| `DIRECT_URL` | **迁移 / `migrate deploy` 用**（Neon **Direct**） | 不含 `-pooler` 的那条；不配易导致构建 **P1001** |
 | `SESSION_SECRET` | 加密会话 Cookie，**至少 32 字符** | 用随机生成器生成一长串 |
 | `APP_BASE_URL` | 验证邮件里的链接前缀、重定向基准 | 先发版：`https://你的项目名.vercel.app` |
 | `SKIP_EMAIL_VERIFICATION` | 先发版跳过邮箱验证 | 设为 `true`；接入真实邮件后改为 `false` 或删除 |
@@ -155,8 +158,11 @@ git push -u origin main
 
 ## 十、常见问题
 
-**Q：Build 报错 `P1001` / 连不上数据库**  
-- 检查 `DATABASE_URL` 是否完整、密码是否转义正确、Neon 项目是否活跃。
+**Q：Build 报错 `P1001` / 连不上数据库（Vercel + Neon）**  
+- 在 Vercel 中已配置 **`DIRECT_URL`**（Neon **Direct** 连接串）并与 **`DATABASE_URL`**（**Pooled**）同时存在；迁移走 `DIRECT_URL`。  
+- 两条连接串均从 Neon **Connect** 复制，勿手写主机名；密码含特殊字符需 **URL 编码**。  
+- 若仍 P1001：在 Neon 文档中查 **IPv4 / serverless 连通性**（部分环境仅 IPv4 时，需使用 Neon 提供的 IPv4 或兼容方式）。  
+- 非 Neon 的自建 Postgres：通常 **`DIRECT_URL` 与 `DATABASE_URL` 填同一条** 即可。
 
 **Q：登录后一刷新就退出**  
 - 检查 `SESSION_SECRET` 是否在 Vercel 里已设置且长度足够。  
@@ -180,7 +186,7 @@ git push -u origin main
 
 ## 十二、清单（复制自用）
 
-- [ ] Neon（或其它）已创建 Postgres，`DATABASE_URL` 已复制  
+- [ ] Neon（或其它）已创建 Postgres：`DATABASE_URL` + **`DIRECT_URL`** 已写入 Vercel（Neon 为 Pooled + Direct 两条）  
 - [ ] 代码已 push 到 Git  
 - [ ] Vercel Import 仓库，Root Directory 正确（若在子目录）  
 - [ ] 已设置：`DATABASE_URL`、`SESSION_SECRET`、`APP_BASE_URL`、`SKIP_EMAIL_VERIFICATION`（按需）  

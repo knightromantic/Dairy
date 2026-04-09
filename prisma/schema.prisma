@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Neon：运行时用语「Pooled」连接串（主机名常含 -pooler）
+  url       = env("DATABASE_URL")
+  // 迁移与 introspect 用「Direct」直连串（主机名一般不含 -pooler）；避免在 Vercel 上对 pooler 跑 migrate 易 P1001
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
