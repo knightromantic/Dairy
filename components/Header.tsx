@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 type Me = { userId: string; email: string } | null;
@@ -8,6 +9,7 @@ type Me = { userId: string; email: string } | null;
 export function Header() {
   // 未拉取会话前视为未登录，避免生产环境 /api/auth/me 失败时导航整块为空
   const [me, setMe] = useState<Me>(null);
+  const pathname = usePathname();
 
   const refresh = useCallback(async () => {
     try {
@@ -25,7 +27,7 @@ export function Header() {
 
   useEffect(() => {
     void refresh();
-  }, [refresh]);
+  }, [refresh, pathname]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
