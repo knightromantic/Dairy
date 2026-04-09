@@ -42,13 +42,27 @@ function LoginForm() {
                 credentials: "include",
                 body: JSON.stringify({ email, password }),
               });
-              const data = await r.json();
+
+              let data: any = null;
+              try {
+                data = await r.json();
+              } catch {
+                data = null;
+              }
+
               if (!r.ok) {
-                setError(typeof data.error === "string" ? data.error : "登录失败");
+                const msg =
+                  data && typeof data.error === "string"
+                    ? data.error
+                    : `登录失败（HTTP ${r.status}）`;
+                setError(msg);
                 return;
               }
+
               router.push("/");
               router.refresh();
+            } catch {
+              setError("网络异常或服务端错误，请稍后重试");
             } finally {
               setLoading(false);
             }
