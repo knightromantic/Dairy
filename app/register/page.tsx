@@ -15,7 +15,7 @@ export default function RegisterPage() {
   return (
     <>
       <h1 className="page-title">注册</h1>
-      <p className="page-sub">使用邮箱注册；验证后即可写日记与评论。</p>
+      <p className="page-sub">使用邮箱注册后即可写日记与评论。</p>
 
       <div className="card form-card">
         <form
@@ -35,7 +35,7 @@ export default function RegisterPage() {
                 setError(data.error ?? "注册失败");
                 return;
               }
-              setSuccess(data.message ?? "请查收验证邮件");
+              setSuccess(data.message ?? "请登录");
               setEmail("");
               setPassword("");
             } finally {
@@ -71,7 +71,7 @@ export default function RegisterPage() {
             minLength={8}
           />
           <button className="btn" type="submit" disabled={loading}>
-            {loading ? "提交中…" : "注册并发送验证邮件"}
+            {loading ? "提交中…" : "注册"}
           </button>
         </form>
         <p className="hint" style={{ marginTop: "1rem" }}>
