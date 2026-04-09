@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
+// 广场需要实时展示最新文章：禁用静态预渲染/缓存
+export const dynamic = "force-dynamic";
+
 function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
   if (!domain) return "***";
