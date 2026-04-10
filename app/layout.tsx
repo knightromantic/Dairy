@@ -3,7 +3,7 @@ import { Header } from "@/components/Header";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DairyFlow — 记录生活，段落留声",
+  title: "DiaryFlow — 记录生活，段落留声",
   description: "在线日记与段落评论社区",
 };
 
