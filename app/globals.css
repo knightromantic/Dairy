@@ -368,18 +368,19 @@ main {
 
 .title-input {
   font-family: var(--font);
-  font-size: 0.95rem;          /* 再降一点 */
-  padding: 0.35rem 0.5rem !important;
-  height: 32px;                /* ✅ 核心：压高度 */
-  
-  border: 1px solid #d8d0c4;   /* 更淡的边框 */
+  font-size: 0.95rem;
+
+  height: 28px;                 /* ✅ 再压一点 */
+  padding: 0 0.5rem !important; /* ✅ 去掉上下 padding */
+
+  border: 1px solid #d8d0c4;
   border-radius: 6px !important;
-  
-  background: #fff;
+
+  line-height: 28px;            /* ✅ 让文字垂直居中 */
 }
 
 .editor-meta {
-  margin-top: 0.3rem;
+  margin-top: 0.4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
