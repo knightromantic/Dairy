@@ -39,7 +39,7 @@ export function Header() {
     <header className="site-header">
       <div className="header-inner">
         <Link href="/" className="logo">
-          日记站
+          DairyFlow
         </Link>
         <nav className="nav">
           {me ? (
