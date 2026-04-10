@@ -94,9 +94,6 @@ export default function NewEntryPage() {
 
             <div className="editor-meta">
               <span>
-                {title.trim().length}/200 · 正文 {content.length} 字
-              </span>
-              <span>
                 以 <code>空行</code> 分段
               </span>
             </div>
