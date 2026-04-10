@@ -92,12 +92,6 @@ export default function NewEntryPage() {
               required
             />
 
-            <div className="editor-meta">
-              <span>
-                以 <code>空行</code> 分段
-              </span>
-            </div>
-
             <label htmlFor="content">正文</label>
             <textarea
               id="content"
