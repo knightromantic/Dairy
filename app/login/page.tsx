@@ -12,23 +12,11 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const verified = search.get("verified") === "1";
-  const qErr = search.get("error");
 
   return (
     <>
       <h1 className="page-title">登录</h1>
-      <p className="page-sub">需先完成邮箱验证。</p>
-
-      {verified ? (
-        <p className="success">邮箱已验证，请登录。</p>
-      ) : null}
-      {qErr === "invalid_or_expired_token" ? (
-        <p className="error">验证链接无效或已过期，请重新注册或联系管理员。</p>
-      ) : qErr === "missing_token" ? (
-        <p className="error">缺少验证参数。</p>
-      ) : null}
-
+	  
       <div className="card form-card">
         <form
           onSubmit={async (e) => {
