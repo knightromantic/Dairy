@@ -92,6 +92,8 @@ export default function NewEntryPage() {
               required
             />
 
+			<div className="editor-meta" style={{ height: "8px" }} />
+			
             <label htmlFor="content">正文</label>
             <textarea
               id="content"
