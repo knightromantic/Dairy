@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/get-session";
@@ -14,8 +15,11 @@ export async function GET(_req: Request, ctx: Ctx) {
   if (!entry) {
     return NextResponse.json({ error: "日记不存在" }, { status: 404 });
   }
-  if (entry.isDraft && session.user?.userId !== entry.authorId) {
-    return NextResponse.json({ error: "日记不存在" }, { status: 404 });
+  if (entry.isDraft) {
+    if (session.user?.userId !== entry.authorId) {
+      return NextResponse.json({ error: "日记不存在" }, { status: 404 });
+    }
+    return NextResponse.json({ comments: [] });
   }
 
   const comments = await prisma.comment.findMany({
@@ -56,8 +60,11 @@ export async function POST(req: Request, ctx: Ctx) {
   if (!entry) {
     return NextResponse.json({ error: "日记不存在" }, { status: 404 });
   }
-  if (entry.isDraft && session.user.userId !== entry.authorId) {
-    return NextResponse.json({ error: "日记不存在" }, { status: 404 });
+  if (entry.isDraft) {
+    if (session.user.userId !== entry.authorId) {
+      return NextResponse.json({ error: "日记不存在" }, { status: 404 });
+    }
+    return NextResponse.json({ error: "草稿不支持评论" }, { status: 400 });
   }
 
   let json: unknown;
@@ -94,6 +101,8 @@ export async function POST(req: Request, ctx: Ctx) {
       author: { select: { id: true, email: true } },
     },
   });
+
+  revalidatePath(`/entries/${entryId}`);
 
   return NextResponse.json({
     id: comment.id,

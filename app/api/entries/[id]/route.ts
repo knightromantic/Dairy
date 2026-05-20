@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/get-session";
 
@@ -59,5 +60,8 @@ export async function DELETE(_req: Request, ctx: Ctx) {
   }
 
   await prisma.entry.delete({ where: { id } });
+  revalidatePath("/");
+  revalidatePath("/drafts");
+  revalidateTag("public-entries");
   return NextResponse.json({ ok: true });
 }

@@ -6,7 +6,7 @@ import { splitIntoParagraphs } from "@/lib/paragraphs";
 
 type Author = { id: string; display: string };
 
-type EntryJson = {
+export type EntryJson = {
   id: string;
   title: string;
   content: string;
@@ -15,7 +15,7 @@ type EntryJson = {
   author: Author;
 };
 
-type CommentRow = {
+export type CommentRow = {
   id: string;
   paragraphIndex: number;
   content: string;
@@ -23,12 +23,24 @@ type CommentRow = {
   author: Author;
 };
 
-export function EntryDetail({ entryId }: { entryId: string }) {
-  const [entry, setEntry] = useState<EntryJson | null>(null);
-  const [comments, setComments] = useState<CommentRow[]>([]);
+type EntryDetailProps = {
+  entryId: string;
+  initialEntry?: EntryJson | null;
+  initialComments?: CommentRow[];
+  initialMe?: { userId: string } | null;
+};
+
+export function EntryDetail({
+  entryId,
+  initialEntry = null,
+  initialComments = [],
+  initialMe,
+}: EntryDetailProps) {
+  const [entry, setEntry] = useState<EntryJson | null>(initialEntry);
+  const [comments, setComments] = useState<CommentRow[]>(initialComments);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [me, setMe] = useState<{ userId: string } | null | undefined>(
-    undefined
+    initialMe
   );
   const [deleting, setDeleting] = useState(false);
 
@@ -56,8 +68,10 @@ export function EntryDetail({ entryId }: { entryId: string }) {
   }, [entryId]);
 
   useEffect(() => {
-    void refreshAll();
-  }, [refreshAll]);
+    if (!initialEntry) {
+      void refreshAll();
+    }
+  }, [initialEntry, refreshAll]);
 
   const paragraphs = useMemo(() => {
     if (!entry) return [];
@@ -131,33 +145,38 @@ export function EntryDetail({ entryId }: { entryId: string }) {
           <div className="para-label">第 {index + 1} 段</div>
           <p className="paragraph-text">{text}</p>
 
-          <div className="comment-thread">
-            {(byPara.get(index) ?? []).length === 0 ? (
-              <p className="empty-thread">这一段还没有评注。</p>
-            ) : null}
-            {(byPara.get(index) ?? []).map((c) => (
-              <div key={c.id} className="comment-item">
-                <span className="comment-author">{c.author.display}</span>
-                <span className="comment-time">
-                  {new Date(c.createdAt).toLocaleString("zh-CN")}
-                </span>
-                <p className="comment-body">{c.content}</p>
-              </div>
-            ))}
+          {entry.isDraft ? null : (
+            <div className="comment-thread">
+              {(byPara.get(index) ?? []).length === 0 ? (
+                <p className="empty-thread">这一段还没有评注。</p>
+              ) : null}
+              {(byPara.get(index) ?? []).map((c) => (
+                <div key={c.id} className="comment-item">
+                  <span className="comment-author">{c.author.display}</span>
+                  <span className="comment-time">
+                    {new Date(c.createdAt).toLocaleString("zh-CN")}
+                  </span>
+                  <p className="comment-body">{c.content}</p>
+                </div>
+              ))}
 
-            {me === undefined ? null : me ? (
-              <ParagraphCommentForm
-                entryId={entryId}
-                paragraphIndex={index}
-                onPosted={() => void refreshAll()}
-              />
-            ) : (
-              <p className="hint" style={{ marginTop: "0.75rem", marginBottom: 0 }}>
-                <Link href="/login">登录</Link>
-                后可在此段落下发表评论。
-              </p>
-            )}
-          </div>
+              {me === undefined ? null : me ? (
+                <ParagraphCommentForm
+                  entryId={entryId}
+                  paragraphIndex={index}
+                  onPosted={() => void refreshAll()}
+                />
+              ) : (
+                <p
+                  className="hint"
+                  style={{ marginTop: "0.75rem", marginBottom: 0 }}
+                >
+                  <Link href="/login">登录</Link>
+                  后可在此段落下发表评论。
+                </p>
+              )}
+            </div>
+          )}
         </section>
       ))}
 

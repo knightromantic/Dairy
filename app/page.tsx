@@ -1,8 +1,21 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
-// 广场需要实时展示最新文章：禁用静态预渲染/缓存
+// 广场避免构建期连接数据库，但运行时缓存公开列表以减少重复查询。
 export const dynamic = "force-dynamic";
+
+const getPublicEntries = unstable_cache(
+  async () =>
+    prisma.entry.findMany({
+      where: { isDraft: false },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: { author: { select: { email: true, id: true } } },
+    }),
+  ["public-entries"],
+  { revalidate: 60, tags: ["public-entries"] }
+);
 
 function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
@@ -11,12 +24,7 @@ function maskEmail(email: string): string {
 }
 
 export default async function HomePage() {
-  const entries = await prisma.entry.findMany({
-    where: { isDraft: false },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    include: { author: { select: { email: true, id: true } } },
-  });
+  const entries = await getPublicEntries();
 
   return (
     <>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/get-session";
@@ -70,6 +71,10 @@ export async function POST(req: Request) {
       authorId: session.user.userId,
     },
   });
+
+  revalidatePath("/");
+  revalidatePath("/drafts");
+  revalidateTag("public-entries");
 
   return NextResponse.json({
     id: entry.id,
