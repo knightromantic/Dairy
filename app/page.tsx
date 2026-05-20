@@ -12,6 +12,7 @@ function maskEmail(email: string): string {
 
 export default async function HomePage() {
   const entries = await prisma.entry.findMany({
+    where: { isDraft: false },
     orderBy: { createdAt: "desc" },
     take: 50,
     include: { author: { select: { email: true, id: true } } },

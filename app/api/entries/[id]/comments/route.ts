@@ -8,9 +8,13 @@ type Ctx = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, ctx: Ctx) {
   const { id: entryId } = await ctx.params;
+  const session = await getSession();
 
   const entry = await prisma.entry.findUnique({ where: { id: entryId } });
   if (!entry) {
+    return NextResponse.json({ error: "日记不存在" }, { status: 404 });
+  }
+  if (entry.isDraft && session.user?.userId !== entry.authorId) {
     return NextResponse.json({ error: "日记不存在" }, { status: 404 });
   }
 
@@ -50,6 +54,9 @@ export async function POST(req: Request, ctx: Ctx) {
   const { id: entryId } = await ctx.params;
   const entry = await prisma.entry.findUnique({ where: { id: entryId } });
   if (!entry) {
+    return NextResponse.json({ error: "日记不存在" }, { status: 404 });
+  }
+  if (entry.isDraft && session.user.userId !== entry.authorId) {
     return NextResponse.json({ error: "日记不存在" }, { status: 404 });
   }
 
