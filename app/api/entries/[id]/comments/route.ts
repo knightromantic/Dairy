@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/get-session";
+import { maskEmail } from "@/lib/mask-email";
 import { paragraphCount } from "@/lib/paragraphs";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -56,7 +57,11 @@ export async function POST(req: Request, ctx: Ctx) {
   }
 
   const { id: entryId } = await ctx.params;
-  const entry = await prisma.entry.findUnique({ where: { id: entryId } });
+  // 只选取校验所需字段，避免拉取整条 content
+  const entry = await prisma.entry.findUnique({
+    where: { id: entryId },
+    select: { isDraft: true, authorId: true, content: true },
+  });
   if (!entry) {
     return NextResponse.json({ error: "日记不存在" }, { status: 404 });
   }
@@ -114,11 +119,4 @@ export async function POST(req: Request, ctx: Ctx) {
       display: maskEmail(comment.author.email),
     },
   });
-}
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return "***";
-  const head = local.slice(0, 2);
-  return `${head}***@${domain}`;
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/get-session";
+import { maskEmail } from "@/lib/mask-email";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -35,13 +36,6 @@ export async function GET(_req: Request, ctx: Ctx) {
       display: maskEmail(entry.author.email),
     },
   });
-}
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return "***";
-  const head = local.slice(0, 2);
-  return `${head}***@${domain}`;
 }
 
 export async function DELETE(_req: Request, ctx: Ctx) {

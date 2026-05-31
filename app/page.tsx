@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { maskEmail } from "@/lib/mask-email";
 
 // 广场避免构建期连接数据库，但运行时缓存公开列表以减少重复查询。
 export const dynamic = "force-dynamic";
@@ -16,12 +17,6 @@ const getPublicEntries = unstable_cache(
   ["public-entries"],
   { revalidate: 60, tags: ["public-entries"] }
 );
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return "***";
-  return `${local.slice(0, 2)}***@${domain}`;
-}
 
 export default async function HomePage() {
   const entries = await getPublicEntries();

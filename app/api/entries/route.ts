@@ -3,6 +3,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/get-session";
+import { maskEmail } from "@/lib/mask-email";
 
 export async function GET() {
   const entries = await prisma.entry.findMany({
@@ -29,12 +30,6 @@ export async function GET() {
   });
 }
 
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return "***";
-  const head = local.slice(0, 2);
-  return `${head}***@${domain}`;
-}
 
 const createSchema = z.object({
   title: z.string().min(1, "请填写标题").max(200),

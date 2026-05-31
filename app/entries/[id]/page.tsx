@@ -6,6 +6,7 @@ import {
 } from "@/components/EntryDetail";
 import { getSession } from "@/lib/get-session";
 import { prisma } from "@/lib/prisma";
+import { maskEmail } from "@/lib/mask-email";
 
 type PageProps = { params: Promise<{ id: string }> };
 
@@ -13,26 +14,28 @@ export default async function EntryPage(props: PageProps) {
   const { id } = await props.params;
   const session = await getSession();
 
-  const entry = await prisma.entry.findUnique({
-    where: { id },
-    include: {
-      author: { select: { id: true, email: true } },
-    },
-  });
+  // 并行发起 entry 与 comments 查询，公开日记的常见路径无需串行等待
+  const [entry, allComments] = await Promise.all([
+    prisma.entry.findUnique({
+      where: { id },
+      include: {
+        author: { select: { id: true, email: true } },
+      },
+    }),
+    prisma.comment.findMany({
+      where: { entryId: id },
+      orderBy: { createdAt: "asc" },
+      include: {
+        author: { select: { id: true, email: true } },
+      },
+    }),
+  ]);
 
   if (!entry || (entry.isDraft && session.user?.userId !== entry.authorId)) {
     notFound();
   }
 
-  const comments = entry.isDraft
-    ? []
-    : await prisma.comment.findMany({
-        where: { entryId: id },
-        orderBy: { createdAt: "asc" },
-        include: {
-          author: { select: { id: true, email: true } },
-        },
-      });
+  const comments = entry.isDraft ? [] : allComments;
 
   const initialEntry: EntryJson = {
     id: entry.id,
@@ -65,11 +68,4 @@ export default async function EntryPage(props: PageProps) {
       initialMe={session.user ? { userId: session.user.userId } : null}
     />
   );
-}
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return "***";
-  const head = local.slice(0, 2);
-  return `${head}***@${domain}`;
 }

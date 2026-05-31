@@ -32,7 +32,7 @@ model Entry {
   updatedAt DateTime @updatedAt
 
   @@index([createdAt])
-  @@index([authorId])
+  @@index([authorId, isDraft])
 }
 
 model Comment {

@@ -27,7 +27,7 @@ export function Header() {
 
   useEffect(() => {
     void refresh();
-  }, [refresh, pathname]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
