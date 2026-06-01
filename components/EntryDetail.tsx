@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -120,7 +121,7 @@ function chunkContent(
 
 // ── Floating comment form ──
 
-function FloatingCommentForm({
+const FloatingCommentForm = memo(function FloatingCommentForm({
   entryId,
   selectedText,
   startOffset,
@@ -190,11 +191,11 @@ function FloatingCommentForm({
       </form>
     </div>
   );
-}
+});
 
 // ── Reply form (small, inline) ──
 
-function ReplyForm({
+const ReplyForm = memo(function ReplyForm({
   entryId,
   parentId,
   selectedText,
@@ -273,11 +274,11 @@ function ReplyForm({
       </div>
     </form>
   );
-}
+});
 
 // ── Comment tree renderer ──
 
-function CommentTree({
+const CommentTree = memo(function CommentTree({
   comments,
   entryId,
   selectedText,
@@ -337,7 +338,7 @@ function CommentTree({
       ))}
     </>
   );
-}
+});
 
 // ── Main component ──
 
@@ -434,6 +435,22 @@ export function EntryDetail({
       });
     }, 0);
   }, [entry]);
+
+  // Stable callbacks for memoized children
+  const handleFloatPosted = useCallback(() => {
+    setFloatPos(null);
+    window.getSelection()?.removeAllRanges();
+    void refreshAll();
+  }, [refreshAll]);
+
+  const handleFloatClose = useCallback(() => {
+    setFloatPos(null);
+    window.getSelection()?.removeAllRanges();
+  }, []);
+
+  const handleCommentPosted = useCallback(() => {
+    void refreshAll();
+  }, [refreshAll]);
 
   // Close floating form on outside click
   useEffect(() => {
@@ -543,15 +560,8 @@ export function EntryDetail({
               startOffset={selStart}
               endOffset={selEnd}
               position={floatPos}
-              onPosted={() => {
-                setFloatPos(null);
-                window.getSelection()?.removeAllRanges();
-                void refreshAll();
-              }}
-              onClose={() => {
-                setFloatPos(null);
-                window.getSelection()?.removeAllRanges();
-              }}
+              onPosted={handleFloatPosted}
+              onClose={handleFloatClose}
             />
           )}
 
@@ -581,7 +591,7 @@ export function EntryDetail({
                 startOffset={activeSegment.start}
                 endOffset={activeSegment.end}
                 me={me}
-                onPosted={() => void refreshAll()}
+                onPosted={handleCommentPosted}
                 depth={0}
               />
 
@@ -593,7 +603,7 @@ export function EntryDetail({
                     selectedText={activeSegment.comments[0]?.selectedText ?? ""}
                     startOffset={activeSegment.start}
                     endOffset={activeSegment.end}
-                    onPosted={() => void refreshAll()}
+                    onPosted={handleCommentPosted}
                   />
                 </div>
               ) : (
