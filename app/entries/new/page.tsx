@@ -72,6 +72,12 @@ export default function NewEntryPage() {
                   );
                   return;
                 }
+
+                if (!data) {
+                  setError("响应异常");
+                  return;
+                }
+
                 router.push(submitAsDraft ? "/drafts" : `/entries/${data.id}`);
                 router.refresh();
               } finally {
