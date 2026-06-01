@@ -57,7 +57,7 @@ export default function NewEntryPage() {
                   body: JSON.stringify({ title, content, isDraft: submitAsDraft }),
                 });
 
-                let data: any = null;
+                let data: { error?: unknown; id?: string } | null = null;
                 try {
                   data = await r.json();
                 } catch {

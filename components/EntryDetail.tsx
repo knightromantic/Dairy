@@ -10,7 +10,7 @@ export type EntryJson = {
   id: string;
   title: string;
   content: string;
-  isDraft?: boolean;
+  isDraft: boolean;
   createdAt: string;
   author: Author;
 };

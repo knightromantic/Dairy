@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 
 function LoginForm() {
   const router = useRouter();
-  const search = useSearchParams();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ function LoginForm() {
                 body: JSON.stringify({ email, password }),
               });
 
-              let data: any = null;
+              let data: { error?: unknown } | null = null;
               try {
                 data = await r.json();
               } catch {
