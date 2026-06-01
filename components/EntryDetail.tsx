@@ -127,6 +127,7 @@ const FloatingCommentForm = memo(function FloatingCommentForm({
   startOffset,
   endOffset,
   position,
+  isMobile,
   onPosted,
   onClose,
 }: {
@@ -135,12 +136,67 @@ const FloatingCommentForm = memo(function FloatingCommentForm({
   startOffset: number;
   endOffset: number;
   position: { top: number; left: number };
+  isMobile: boolean;
   onPosted: () => void;
   onClose: () => void;
 }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  if (isMobile) {
+    return (
+      <div className="float-overlay" onClick={onClose}>
+        <div className="float-comment float-comment-mobile" onClick={(e) => e.stopPropagation()}>
+          <div className="float-comment-header">
+            <span className="float-comment-quote">
+              「{selectedText.length > 60 ? selectedText.slice(0, 60) + "…" : selectedText}」
+            </span>
+            <button type="button" className="float-close" onClick={onClose}>
+              ✕
+            </button>
+          </div>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setErr(null);
+              setBusy(true);
+              try {
+                const r = await fetch(`/api/entries/${entryId}/comments`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({ selectedText, startOffset, endOffset, content: text }),
+                });
+                const data = await r.json();
+                if (!r.ok) {
+                  setErr(typeof data.error === "string" ? data.error : "发送失败");
+                  return;
+                }
+                setText("");
+                onPosted();
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {err ? <p className="error" style={{ margin: 0 }}>{err}</p> : null}
+            <textarea
+              placeholder="写下对这一段的评论…"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              required
+            />
+            <div className="float-comment-actions">
+              <button className="btn" type="submit" disabled={busy}>
+                {busy ? "发送中…" : "发表"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="float-comment" style={{ top: position.top, left: position.left }}>
@@ -359,11 +415,21 @@ export function EntryDetail({
   const [selStart, setSelStart] = useState(0);
   const [selEnd, setSelEnd] = useState(0);
   const [floatPos, setFloatPos] = useState<{ top: number; left: number } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Active highlight segment (for inline comment panel)
   const [activeSegment, setActiveSegment] = useState<HighlightSegment | null>(null);
 
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const refreshAll = useCallback(async () => {
     const [er, cr, mr] = await Promise.all([
@@ -405,12 +471,12 @@ export function EntryDetail({
     return chunkContent(entry.content, segments);
   }, [entry, segments]);
 
-  // Handle mouseup for text selection
-  const handleMouseUp = useCallback(() => {
+  // Handle selection end (mouseup / touchend) for text selection
+  const handleSelectionEnd = useCallback(() => {
     setTimeout(() => {
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed || !contentRef.current) {
-        setFloatPos(null);
+        if (!isMobile) setFloatPos(null);
         return;
       }
       const range = sel.getRangeAt(0);
@@ -419,7 +485,7 @@ export function EntryDetail({
       const start = getAbsoluteOffset(contentRef.current, range.startContainer, range.startOffset);
       const end = getAbsoluteOffset(contentRef.current, range.endContainer, range.endOffset);
       if (start >= end) {
-        setFloatPos(null);
+        if (!isMobile) setFloatPos(null);
         return;
       }
 
@@ -428,13 +494,18 @@ export function EntryDetail({
       setSelStart(start);
       setSelEnd(end);
 
-      const rect = range.getBoundingClientRect();
-      setFloatPos({
-        top: rect.bottom + window.scrollY + 8,
-        left: Math.max(8, rect.left + window.scrollX + rect.width / 2 - 160),
-      });
-    }, 0);
-  }, [entry]);
+      if (isMobile) {
+        // Mobile: just mark float as active (position ignored, uses fixed bottom sheet)
+        setFloatPos({ top: 0, left: 0 });
+      } else {
+        const rect = range.getBoundingClientRect();
+        setFloatPos({
+          top: rect.bottom + window.scrollY + 8,
+          left: Math.max(8, rect.left + window.scrollX + rect.width / 2 - 160),
+        });
+      }
+    }, 200); // slightly longer delay for mobile selection to settle
+  }, [entry, isMobile]);
 
   // Stable callbacks for memoized children
   const handleFloatPosted = useCallback(() => {
@@ -528,7 +599,8 @@ export function EntryDetail({
           <div
             ref={contentRef}
             className="content-text selectable"
-            onMouseUp={handleMouseUp}
+            onMouseUp={handleSelectionEnd}
+            onTouchEnd={handleSelectionEnd}
           >
             {chunks.map((ch, i) =>
               ch.highlight ? (
@@ -560,6 +632,7 @@ export function EntryDetail({
               startOffset={selStart}
               endOffset={selEnd}
               position={floatPos}
+              isMobile={isMobile}
               onPosted={handleFloatPosted}
               onClose={handleFloatClose}
             />

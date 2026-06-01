@@ -456,7 +456,9 @@ main {
 }
 .content-text.selectable {
   user-select: text;
+  -webkit-user-select: text;
   cursor: text;
+  touch-action: manipulation;
 }
 
 /* ── 高亮已评论片段 ── */
@@ -584,4 +586,111 @@ main {
 .btn-sm {
   padding: 0.35rem 0.85rem;
   font-size: 0.85rem;
+}
+
+/* ═══════════════════════════════════════
+   Mobile  (≤ 640px)
+   ═══════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* ── layout ── */
+  main {
+    padding: 1.25rem 0.85rem 2rem;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .card {
+    padding: 1rem 1.05rem;
+  }
+
+  .card h2 {
+    font-size: 1.1rem;
+  }
+
+  /* ── header ── */
+  .header-inner {
+    padding: 0.65rem 0.85rem;
+    gap: 0.5rem;
+  }
+  .logo {
+    font-size: 1.15rem;
+  }
+  .nav {
+    gap: 0.55rem;
+    font-size: 0.85rem;
+  }
+  .nav-email {
+    display: none;
+  }
+
+  /* ── content ── */
+  .content-text {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  /* ── highlight ── */
+  .content-highlight {
+    border-bottom-width: 1.5px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── floating overlay ── */
+  .float-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(44, 40, 37, 0.35);
+    z-index: 100;
+    animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ── floating comment (mobile bottom sheet) ── */
+  .float-comment-mobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding: 1.25rem 1rem calc(1.25rem + env(safe-area-inset-bottom));
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+
+  /* ── inline panel ── */
+  .inline-comment-panel {
+    padding: 0.85rem 0.9rem;
+    border-radius: 10px;
+  }
+  .inline-panel-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .inline-panel-quote {
+    font-size: 0.8rem;
+  }
+
+  /* ── reply ── */
+  .reply-form textarea {
+    font-size: 0.85rem;
+    min-height: 44px;
+  }
+
+  /* ── editor ── */
+  .editor-shell {
+    grid-template-columns: 1fr;
+  }
+  .preview-card {
+    position: static;
+  }
 }
