@@ -41,9 +41,17 @@ model Comment {
   entry          Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
   authorId       String
   author         User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  paragraphIndex Int
+
+  selectedText   String   @default("")
+  startOffset    Int      @default(0)
+  endOffset      Int      @default(0)
+
+  parentId       String?
+  parent         Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies        Comment[] @relation("CommentReplies")
+
   content        String
   createdAt      DateTime @default(now())
 
-  @@index([entryId, paragraphIndex])
+  @@index([entryId, startOffset, endOffset])
 }

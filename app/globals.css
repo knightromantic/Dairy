@@ -445,3 +445,143 @@ main {
   font-family: var(--font);
   line-height: 1.75;
 }
+
+/* ── 正文可选中区域 ── */
+.content-text {
+  font-family: var(--font);
+  font-size: 1.08rem;
+  white-space: pre-wrap;
+  line-height: 1.85;
+  margin-bottom: 1rem;
+}
+.content-text.selectable {
+  user-select: text;
+  cursor: text;
+}
+
+/* ── 高亮已评论片段 ── */
+.content-highlight {
+  background: rgba(201, 168, 138, 0.18);
+  border-bottom: 2px dashed var(--accent-soft);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+.content-highlight:hover {
+  background: rgba(201, 168, 138, 0.32);
+}
+.content-highlight.active {
+  background: rgba(201, 168, 138, 0.38);
+  border-bottom-color: var(--accent);
+}
+
+/* ── 浮动评论框 ── */
+.float-comment {
+  position: absolute;
+  width: 340px;
+  max-width: calc(100vw - 2rem);
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(44, 40, 37, 0.15);
+  padding: 1rem;
+  z-index: 50;
+}
+.float-comment-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.float-comment-quote {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.4;
+  flex: 1;
+}
+.float-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.float-close:hover {
+  color: var(--ink);
+}
+.float-comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+/* ── 内联评论面板 ── */
+.inline-comment-panel {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-top: 1rem;
+  box-shadow: 0 2px 8px rgba(44, 40, 37, 0.06);
+}
+.inline-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border);
+}
+.inline-panel-quote {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+  flex: 1;
+}
+.inline-panel-count {
+  font-size: 0.8rem;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ── 回复 ── */
+.reply-toggle {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 0.35rem;
+}
+.reply-toggle:hover {
+  text-decoration: underline;
+}
+.reply-form {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.reply-form textarea {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+.reply-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.btn-sm {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.85rem;
+}

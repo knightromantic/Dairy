@@ -14,7 +14,6 @@ export default async function EntryPage(props: PageProps) {
   const { id } = await props.params;
   const session = await getSession();
 
-  // 并行发起 entry 与 comments 查询，公开日记的常见路径无需串行等待
   const [entry, allComments] = await Promise.all([
     prisma.entry.findUnique({
       where: { id },
@@ -35,7 +34,32 @@ export default async function EntryPage(props: PageProps) {
     notFound();
   }
 
-  const comments = entry.isDraft ? [] : allComments;
+  // Build tree from flat list
+  const map = new Map<string, CommentRow>();
+  const roots: CommentRow[] = [];
+
+  for (const c of allComments) {
+    map.set(c.id, {
+      id: c.id,
+      selectedText: c.selectedText,
+      startOffset: c.startOffset,
+      endOffset: c.endOffset,
+      content: c.content,
+      createdAt: c.createdAt.toISOString(),
+      author: { id: c.author.id, display: maskEmail(c.author.email) },
+      parentId: c.parentId,
+      replies: [],
+    });
+  }
+
+  for (const c of allComments) {
+    const row = map.get(c.id)!;
+    if (c.parentId && map.has(c.parentId)) {
+      map.get(c.parentId)!.replies.push(row);
+    } else {
+      roots.push(row);
+    }
+  }
 
   const initialEntry: EntryJson = {
     id: entry.id,
@@ -49,22 +73,11 @@ export default async function EntryPage(props: PageProps) {
     },
   };
 
-  const initialComments: CommentRow[] = comments.map((c) => ({
-    id: c.id,
-    paragraphIndex: c.paragraphIndex,
-    content: c.content,
-    createdAt: c.createdAt.toISOString(),
-    author: {
-      id: c.author.id,
-      display: maskEmail(c.author.email),
-    },
-  }));
-
   return (
     <EntryDetail
       entryId={id}
       initialEntry={initialEntry}
-      initialComments={initialComments}
+      initialComments={roots}
       initialMe={session.user ? { userId: session.user.userId } : null}
     />
   );
